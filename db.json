@@ -1,0 +1,35 @@
+{
+  "list": [
+    {
+      "dbid": "123",
+      "model": "",
+      "type": "construction",
+      "time": "2019-04-13"
+    },
+    {
+      "dbid": "sadas",
+      "model": "",
+      "type": "construction",
+      "time": "2019-04-13"
+    },
+    {
+      "dbid": "xzc",
+      "model": "",
+      "type": "construction",
+      "time": "2019-04-13"
+    },
+    {
+      "dbid": "",
+      "model": "",
+      "type": "check",
+      "time": "2019-04-13"
+    },
+    {
+      "dbid": "2239",
+      "model": "",
+      "type": "construction",
+      "time": "2019-04-13"
+    }
+  ],
+  "count": 0
+}

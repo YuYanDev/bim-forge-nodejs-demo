@@ -1,0 +1,203 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Autodesk Forge Tutorial</title>
+  <meta charset="utf-8" />
+  <!-- Common packages: jQuery, Bootstrap, jsTree -->
+  <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/jstree/3.2.1/jstree.min.js"></script>
+  <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/css/bootstrap.min.css">
+  <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/jstree/3.2.1/themes/default/style.min.css" />
+  <!-- Autodesk Forge Viewer files -->
+  <link rel="stylesheet" href="https://developer.api.autodesk.com/modelderivative/v2/viewers/style.min.css?v=v6.0" type="text/css">
+  <script src="https://developer.api.autodesk.com/modelderivative/v2/viewers/viewer3D.min.js?v=v6.0"></script>
+  <!-- this project files -->
+  <link href="css/main.css" rel="stylesheet" />
+
+  <style>
+    #modellist{
+      height: 400px;
+      
+    }
+    #modelpannel{
+      height: 400px;
+      overflow: auto;
+    }
+    #modelviewer{
+      height: 400px;
+    }
+    #viewerApp{
+      /* position: relative; */
+      margin-left: auto;
+      margin-bottom: auto;
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Fixed navbar by Bootstrap: https://getbootstrap.com/examples/navbar-fixed-top/ -->
+  <nav class="navbar navbar-default navbar-fixed-top">
+    <div class="container-fluid">
+      <ul class="nav navbar-nav left">
+        <li>
+          <a href="http://developer.autodesk.com" target="_blank">
+            <img alt="Autodesk Forge" src="//developer.static.autodesk.com/images/logo_forge-2-line.png" height="20">
+          </a>
+        </li>
+      </ul>
+    </div>
+  </nav>
+  <!-- End of navbar -->
+  <div class="container-fluid">
+    <div class="row">
+      <div class="col-sm-4" id="modellist">
+          <div class="panel panel-default" id="modelpannel">
+          <div class="panel-heading" data-toggle="tooltip" style="padding: 0px;">
+            <span id="userInfo"></span>
+            <span id="refreshHubs" class="glyphicon glyphicon-refresh" style="cursor: pointer; display: none" title="Refresh list of files"></span>
+            <span id="signOut" class="glyphicon glyphicon-log-out" style="margin-top:5px;cursor: pointer; float: right; display: none" title="Sign out"> </span>
+          </div>
+          <div id="userHubs" >
+            <div style="padding-top: 100px; text-align: center;">
+              <button class="btn btn-lg btn-default" id="autodeskSigninButton">
+                <img src="https://github.com/Autodesk-Forge/bim360appstore-data.management-nodejs-transfer.storage/raw/master/www/img/autodesk_text.png"
+                  height="20"> Sign in
+              </button>
+              <br/>
+              <br/>
+              <br/> You may also need to provision your<br/> BIM 360 Docs account for this app.<br/>
+              <a href="https://forge.autodesk.com/blog/bim-360-docs-provisioning-forge-apps">Learn more</a>.
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-sm-8" id="modelviewer">
+          <div class="panel panel-default" style="height:400px">
+              <div class="panel-body">
+                <div id="viewerApp"></div>
+              </div>
+          </div>
+      </div>
+    </div>
+    <div style="height: 30px;visibility: hidden;">
+
+    </div>
+    <div class="row">
+        <div class="col-sm-4" >
+            <div class="panel panel-default">
+                <div class="panel-body">
+                </div> 
+            </div>    
+        </div>
+        <div class="col-sm-4" >
+
+          <div class="panel panel-default">
+              <div class="panel-heading">任务列表</div>
+              <table class="table" id="rwlb">
+              </table>
+            </div>
+        </div>
+        <div class="col-sm-4" >
+            <div class="panel panel-default">
+                <div class="panel-body">
+                  <div class="row">
+                      <div class="col-sm-12" >
+                        <div class="input-group">
+                            <input type="text" id="goujianlist" class="form-control" placeholder="点选构件">
+                        </div>
+                      </div>
+                      <div class="col-sm-12" style="height: 10px;visibility: hidden;">
+
+                        </div>
+                      <div class="col-sm-4" >
+                          <button type="button" class="btn btn-default" aria-haspopup="true" aria-expanded="false" id="constructionbtn">
+                              施工 
+                            </button>
+                      </div>
+                      <div class="col-sm-4" >
+                          <button type="button" class="btn btn-default" aria-haspopup="true" aria-expanded="false" id="fixbtn">
+                              维修 
+                            </button>
+                      </div>
+                      <div class="col-sm-4" >
+                          <button type="button" class="btn btn-default" aria-haspopup="true" aria-expanded="false" id="checkbtn">
+                              验收 
+                          </button>
+                      </div>
+                  </div>
+                </div>
+              </div>
+        </div>
+    </div>
+  </div>
+  <script src="js/ForgeTree.js"></script>
+  <script src="js/ForgeViewer.js"></script>
+  <script>
+    function drawtable(data){
+      function checkzhcn(name){
+        switch(name){
+          case 'construction':return "施工";break;
+          case 'fix':return "维修";break;
+          case 'check':return "检测";break;
+          default: break;
+        }
+      }
+      var table = `
+      <thead>
+        <tr>
+          <th>日期</th>
+          <th>dbid</th>
+          <th>种类</th>
+        </tr>
+      </thead>
+      <tbody>
+      `
+      data.map((item)=>{
+        table = table + `
+        <tr>
+          <td>${item.time}</td>
+          <td>${item.dbid}</td>
+          <td>${checkzhcn(item.type)}</td>
+        </tr>`
+      })
+      document.getElementById('rwlb').innerHTML=table+'</tbody>'
+    }
+    function submit(type){
+      var data = {
+          "model":"",
+          "type":type,
+          "dbid":$('#goujianlist').val().split(',')
+        }
+      $.ajax({
+        type: 'POST',
+        url: '/api/common/submit/Repairmodule',
+        data: data,
+        success: function(data){
+          if(data.type=="success"){
+            alert('success')
+            drawtable(data.body)
+            console.log(data.body)
+          }else{
+            alert('flase')
+           
+          }
+        },
+        // dataType: dataType
+      });
+    }
+    document.getElementById('constructionbtn').addEventListener('click',function(){
+      submit('construction')
+    })
+    document.getElementById('fixbtn').addEventListener('click',function(){
+      submit('fix')
+    })
+    document.getElementById('checkbtn').addEventListener('click',function(){
+      submit('check')
+    })
+  </script>
+  
+</body>
+<iframe id="hiddenFrame" style="visibility: hidden; display: none" />
+</html>
